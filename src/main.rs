@@ -20,9 +20,16 @@ fn main() {
 
     loop {
         let msg = socket.read_message().expect("Error reading message").to_string();
-        if let Ok(elems) = parse_ris_live_message(msg.as_str()) {
-            for elem in elems {
-                println!("{}", elem);
+        match parse_ris_live_message(msg.as_str()) {
+            Ok(elems) => {
+                for e in elems {
+                    println!("{}", e);
+                }
+            }
+            Err(error) => {
+                println!("{:?}", &error);
+                println!("{}", msg);
+                break;
             }
         }
     }
