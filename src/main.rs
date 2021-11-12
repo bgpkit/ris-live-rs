@@ -20,6 +20,9 @@ fn main() {
 
     loop {
         let msg = socket.read_message().expect("Error reading message").to_string();
+        if msg.is_empty() {
+            continue
+        }
         match parse_ris_live_message(msg.as_str()) {
             Ok(elems) => {
                 for e in elems {
