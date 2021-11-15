@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 
 serde_json = "1.0.69"
-bgpkit-parser="0.5.0-rc.2"
+bgpkit-parser="0.5.1"
 tungstenite="0.16.0"
 url = "2.1.0"
