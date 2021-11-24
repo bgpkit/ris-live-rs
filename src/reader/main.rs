@@ -1,8 +1,8 @@
-use bgpkit_parser::parse_ris_live_message;
-use bgpkit_parser::parser::rislive::error::ParserRisliveError;
 use serde_json::json;
 use tungstenite::{connect, Message};
 use url::Url;
+use ris_live_rs::error::ParserRisliveError;
+use ris_live_rs::parse_ris_live_message;
 
 const RIS_LIVE_URL: &str = "ws://ris-live.ripe.net/v1/ws/?client=rust-bgpkit-parser";
 
