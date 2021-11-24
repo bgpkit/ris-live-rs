@@ -2,6 +2,15 @@
 name = "ris-live-rs"
 version = "0.0.1"
 edition = "2021"
+authors = ["Mingwei Zhang <mingwei@bgpkit.com>"]
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/bgpkit/ris-live-rs"
+documentation = "https://docs.rs/ris-live-rs"
+description = """
+RIS-Live real-time BGP data stream crate.
+"""
+keywords = ["bgp"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
