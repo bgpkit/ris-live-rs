@@ -72,6 +72,63 @@ macro_rules! unwrap_or_return {
     }
 }
 
+pub fn compose_subscription_message(
+    host: Option<String>,
+    msg_type: Option<String>,
+    require: Option<String>,
+    peer: Option<String>,
+    prefix: Option<String>,
+    path: Option<String>,
+    more_specific: bool,
+    less_specific: bool,
+) -> String {
+    let mut options: Vec<String> = vec![];
+
+    if let Some(host) = host {
+        options.push(format!("\"host\": \"{}\"", host))
+    }
+
+    if let Some(msg_type) = msg_type {
+        options.push(format!("\"type\": \"{}\"", msg_type))
+    }
+
+    if let Some(require) = require {
+        options.push(format!("\"require\": \"{}\"", require))
+    }
+
+    if let Some(peer) = peer {
+        options.push(format!("\"peer\": \"{}\"", peer))
+    }
+
+    if let Some(prefix) = prefix {
+        options.push(format!("\"prefix\": \"{}\"", prefix))
+    }
+
+    if let Some(path) = path {
+        options.push(format!("\"path\": \"{}\"", path))
+    }
+
+    match more_specific {
+        true => {
+            options.push(format!("\"moreSpecific\": true"))
+        }
+        false => {
+            options.push(format!("\"moreSpecific\": false"))
+        }
+    }
+
+    match less_specific {
+        true => {
+            options.push(format!("\"lessSpecific\": true"))
+        }
+        false => {
+            options.push(format!("\"lessSpecific\": false"))
+        }
+    }
+
+    format!("{{\"type\": \"ris_subscribe\", \"data\":{{ {} }} }}", options.join(","))
+}
+
 /// This function parses one message and returns a result of a vector of [BgpElem]s or an error
 pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisliveError> {
 

@@ -56,6 +56,75 @@ fn main() {
 }
 ```
 
+## Filtering
+
+`ris-live-rs` support filtering message by composing customized 
+ris-live subscription message. Use the `compose_subscription_message`
+function to create a filtering message.
+
+```rust
+pub fn compose_subscription_message(
+    host: Option<String>,
+    msg_type: Option<String>,
+    require: Option<String>,
+    peer: Option<String>,
+    prefix: Option<String>,
+    path: Option<String>,
+    more_specific: bool,
+    less_specific: bool,
+) -> String {
+    ...
+}
+
+// subscribe to messages from one collector
+let msg = compose_subscription_message(
+opts.host,
+opts.msg_type,
+opts.require,
+opts.peer,
+opts.prefix,
+opts.path,
+opts.more_specific,
+opts.less_specific
+);
+println!("{}", &msg);
+socket.write_message(Message::Text(msg)).unwrap();
+```
+
+## `ris-live-reader`
+
+`ris-live-rs` library also comes with a simple command-line program 
+that supports filtering and different output formats: `ris-live-reader`.
+
+Full command-line options are:
+```
+ris-live-rs 0.1.0
+
+Mingwei Zhang <mingwei@bgpkit.com>
+
+ris-live-reader is a simple cli tool that can stream BGP data from RIS-Live project with websocket
+
+USAGE:
+    ris-live-reader [OPTIONS]
+
+OPTIONS:
+        --client <CLIENT>        client name to identify the stream [default: ris-live-rs]
+    -h, --help                   Print help information
+        --host <HOST>            Filter by RRC host: e.g. rrc01
+        --json                   Output as JSON objects
+        --less-specific          Match prefixes that are less specific (contain) `prefix`
+        --more-specific          Match prefixes that are more specific (part of) `prefix`
+        --msg-type <MSG_TYPE>    Only include messages of a given BGP or RIS type: UPDATE, OPEN,
+                                 NOTIFICATION, KEEPALIVE, or RIS_PEER_STATE
+        --path <PATH>            ASN or pattern to match against the AS PATH attribute
+        --peer <PEER>            Only include messages sent by the given BGP peer
+        --prefix <PREFIX>        Filter UPDATE messages by prefixes in announcements or withdrawals
+        --pretty                 Pretty-print JSON output
+        --raw                    Print out raw message without parsing
+        --require <REQUIRE>      Only include messages containing a given key
+    -V, --version                Print version information
+```
+
 ## Built with ❤️ by BGPKIT Team
 
 BGPKIT is a small-team start-up that focus on building the best tooling for BGP data in Rust. We have 10 years of
