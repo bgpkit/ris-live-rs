@@ -125,6 +125,20 @@ OPTIONS:
     -V, --version                Print version information
 ```
 
+### Installation
+
+Install via cargo by:
+```bash
+cargo install ris-live-rs
+```
+
+Or checkout the repo and run: 
+```bash
+cargo install --path .
+```
+
+The program `ris-live-reader` will be installed to your `$CARGO_HOME/bin` (e.g. `~/.cargo/bin`).
+
 ## Built with ❤️ by BGPKIT Team
 
 BGPKIT is a small-team start-up that focus on building the best tooling for BGP data in Rust. We have 10 years of
