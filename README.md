@@ -96,6 +96,8 @@ socket.write_message(Message::Text(msg)).unwrap();
 `ris-live-rs` library also comes with a simple command-line program 
 that supports filtering and different output formats: `ris-live-reader`.
 
+[![asciicast](https://asciinema.org/a/zAxCUmUko9H7T8KM9qFY77uPo.svg)](https://asciinema.org/a/zAxCUmUko9H7T8KM9qFY77uPo)
+
 Full command-line options are:
 ```
 ris-live-rs 0.1.0
