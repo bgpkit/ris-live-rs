@@ -141,6 +141,12 @@ cargo install --path .
 
 The program `ris-live-reader` will be installed to your `$CARGO_HOME/bin` (e.g. `~/.cargo/bin`).
 
+### Run with Docker
+
+```bash
+docker run --rm -it ghcr.io/bgpkit/ris-live-reader --help
+```
+
 ## Built with ❤️ by BGPKIT Team
 
 BGPKIT is a small-team start-up that focus on building the best tooling for BGP data in Rust. We have 10 years of
