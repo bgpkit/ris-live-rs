@@ -144,12 +144,12 @@ The program `ris-live-reader` will be installed to your `$CARGO_HOME/bin` (e.g. 
 ### Run with Docker
 
 ```bash
-docker run --rm -it ghcr.io/bgpkit/ris-live-reader --help
+docker run --rm -it bgpkit/ris-live-reader --help
 ```
 
 ## Built with ❤️ by BGPKIT Team
 
-BGPKIT is a small-team start-up that focus on building the best tooling for BGP data in Rust. We have 10 years of
+BGPKIT is a small-team start-up that focuses on building the best tooling for BGP data in Rust. We have 10 years of
 experience working with BGP data and believe that our work can enable more companies to start keeping tracks of BGP data
 on their own turf. Learn more about what services we provide at https://bgpkit.com.
 
