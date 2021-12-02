@@ -1,5 +1,4 @@
 use tungstenite::{connect, Message};
-use url::Url;
 use ris_live_rs::error::ParserRisliveError;
 use ris_live_rs::{compose_subscription_message, parse_ris_live_message};
 use structopt::StructOpt;
@@ -69,7 +68,7 @@ fn main() {
     let url = format!("{}?client={}", RIS_LIVE_URL_BASE, opts.client);
     // connect to RIPE RIS Live websocket server
     let (mut socket, _response) =
-        connect(Url::parse(url.as_str()).unwrap())
+        connect(url.as_str())
             .expect("Can't connect to RIS Live websocket server");
 
     // subscribe to messages from one collector
