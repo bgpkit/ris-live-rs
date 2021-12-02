@@ -1,5 +1,5 @@
 # select build image
-FROM rust:1.56 as build
+FROM rust:1.46 as build
 
 # create a new empty shell project
 RUN USER=root cargo new --bin ris_live_rs
