@@ -9,6 +9,7 @@ use structopt::StructOpt;
 const RIS_LIVE_URL_BASE: &str = "ws://ris-live.ripe.net/v1/ws/";
 
 /// ris-live-reader is a simple cli tool that can stream BGP data from RIS-Live project with websocket.
+/// Check out https://ris-live.ripe.net/ for more data source information.
 #[derive(StructOpt, Debug)]
 #[structopt(name = "ris-live-reader")]
 struct Opts {
@@ -17,15 +18,15 @@ struct Opts {
     #[structopt(long, default_value="ris-live-rs")]
     client: String,
 
-    /// Filter by RRC host: e.g. rrc01
-    #[structopt(long)]
-    host: Option<String>,
+    /// Filter by RRC host: e.g. rrc01. Use "all" for the firehose.
+    #[structopt(long, default_value="rrc21")]
+    host: String,
 
     /// Only include messages of a given BGP or RIS type: UPDATE, OPEN, NOTIFICATION, KEEPALIVE, or RIS_PEER_STATE
     #[structopt(long)]
     msg_type: Option<String>,
 
-    /// Only include messages of a given BGP update type: announcement (a) or withdrawal (w)
+    /// Only a given BGP update type: announcement (a) or withdrawal (w)
     #[structopt(long)]
     update_type: Option<String>,
 

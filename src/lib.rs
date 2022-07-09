@@ -73,7 +73,7 @@ macro_rules! unwrap_or_return {
 
 #[allow(clippy::too_many_arguments)]
 pub fn compose_subscription_message(
-    host: &Option<String>,
+    host: &String,
     msg_type: &Option<String>,
     require: &Option<String>,
     peer: &Option<String>,
@@ -84,7 +84,7 @@ pub fn compose_subscription_message(
 ) -> String {
     let mut options: Vec<String> = vec![];
 
-    if let Some(host) = host {
+    if host.to_lowercase().as_str() != "all" {
         options.push(format!("\"host\": \"{}\"", host))
     }
 
