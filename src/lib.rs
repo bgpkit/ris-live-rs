@@ -50,7 +50,7 @@ fn main() {
     }
 }
 ```
-*/
+ */
 
 use std::net::IpAddr;
 use bgp_models::prelude::*;
@@ -247,6 +247,40 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                                         aggr_ip: bgp_aggregator.1,
                                     }
                                 );
+                            }
+
+                            if let Some(prefixes) = &announcement.withdrawals {
+                                for prefix in prefixes {
+                                    let p = match prefix.parse::<NetworkPrefix>(){
+                                        Ok(net) => { net }
+                                        Err(_) => {
+                                            if prefix == "eor" {
+                                                return Err(ParserRisliveError::ElemEndOfRibPrefix)
+                                            }
+                                            return Err(ParserRisliveError::ElemIncorrectPrefix(prefix.to_string()))
+                                        }
+                                    };
+                                    elems.push(
+                                        BgpElem{
+                                            timestamp: ris_msg.timestamp,
+                                            elem_type: ElemType::WITHDRAW,
+                                            peer_ip,
+                                            peer_asn,
+                                            prefix: p,
+                                            next_hop: None,
+                                            as_path: None,
+                                            origin_asns: None,
+                                            origin: None,
+                                            local_pref: None,
+                                            med: None,
+                                            communities: None,
+                                            atomic: None,
+                                            aggr_asn: None,
+                                            aggr_ip: None,
+                                        }
+                                    );
+
+                                }
                             }
                         }
                     }
