@@ -73,14 +73,14 @@ macro_rules! unwrap_or_return {
 
 #[allow(clippy::too_many_arguments)]
 pub fn compose_subscription_message(
-    host: Option<String>,
-    msg_type: Option<String>,
-    require: Option<String>,
-    peer: Option<String>,
-    prefix: Option<String>,
-    path: Option<String>,
-    more_specific: bool,
-    less_specific: bool,
+    host: &Option<String>,
+    msg_type: &Option<String>,
+    require: &Option<String>,
+    peer: &Option<String>,
+    prefix: &Option<String>,
+    path: &Option<String>,
+    more_specific: &bool,
+    less_specific: &bool,
 ) -> String {
     let mut options: Vec<String> = vec![];
 
@@ -301,7 +301,7 @@ mod tests {
     #[test]
     fn test_ris_live_msg() {
         let msg_str = r#"
-        {"type": "ris_message","data":{"timestamp":1636247118.76,"peer":"2001:7f8:24::82","peer_asn":"58299","id":"20-5761-238131559","host":"rrc20","type":"UPDATE","path":[58299,49981,397666],"origin":"igp","announcements":[{"next_hop":"2001:7f8:24::82","prefixes":["2602:fd9e:f00::/40"]},{"next_hop":"fe80::768e:f8ff:fea6:b2c4","prefixes":["2602:fd9e:f00::/40"]}],"raw":"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF005A02000000434001010040020E02030000E3BB0000C33D00061162800E2B00020120200107F8002400000000000000000082FE80000000000000768EF8FFFEA6B2C400282602FD9E0F"}}
+        {"type": "ris_message","data":{"timestamp":1636247118.76,"peer":"2001:7f8:24::82","peer_asn":"58299","id":"20-5761-238131559","host":"rrc20","type":"UPDATE","path":[58299,49981,397666],"origin":"igp","announcements":[{"next_hop":"2001:7f8:24::82","prefixes":["2602:fd9e:f00::/40"]},{"next_hop":"fe80::768e:f8ff:fea6:b2c4","prefixes":["2602:fd9e:f00::/40"], "withdrawals": ["1.1.1.0/24", "8.8.8.0/24"]}],"raw":"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF005A02000000434001010040020E02030000E3BB0000C33D00061162800E2B00020120200107F8002400000000000000000082FE80000000000000768EF8FFFEA6B2C400282602FD9E0F"}}
         "#;
         let msg = parse_ris_live_message(&msg_str).unwrap();
         for elem in msg {

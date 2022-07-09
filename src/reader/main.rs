@@ -1,3 +1,6 @@
+extern crate core;
+
+use bgp_models::bgp::ElemType;
 use tungstenite::{connect, Message};
 use ris_live_rs::error::ParserRisliveError;
 use ris_live_rs::{compose_subscription_message, parse_ris_live_message};
@@ -21,6 +24,10 @@ struct Opts {
     /// Only include messages of a given BGP or RIS type: UPDATE, OPEN, NOTIFICATION, KEEPALIVE, or RIS_PEER_STATE
     #[structopt(long)]
     msg_type: Option<String>,
+
+    /// Only include messages of a given BGP update type: announcement (a) or withdrawal (w)
+    #[structopt(long)]
+    update_type: Option<String>,
 
     /// Only include messages containing a given key
     #[structopt(long)]
@@ -73,14 +80,14 @@ fn main() {
 
     // subscribe to messages from one collector
     let msg = compose_subscription_message(
-        opts.host,
-        opts.msg_type,
-        opts.require,
-        opts.peer,
-        opts.prefix,
-        opts.path,
-        opts.more_specific,
-        opts.less_specific
+        &opts.host,
+        &opts.msg_type,
+        &opts.require,
+        &opts.peer,
+        &opts.prefix,
+        &opts.path,
+        &opts.more_specific,
+        &opts.less_specific
     );
     println!("{}", &msg);
     socket.write_message(Message::Text(msg)).unwrap();
@@ -97,6 +104,28 @@ fn main() {
         match parse_ris_live_message(msg.as_str()) {
             Ok(elems) => {
                 for e in elems {
+                    if let Some(t) = &opts.update_type {
+                        match t.to_lowercase().chars().next().unwrap() {
+                            'a' => {
+                                match e.elem_type{
+                                    ElemType::ANNOUNCE => {}
+                                    ElemType::WITHDRAW => { continue}
+                                }
+                            }
+                            'w' => {
+                                match e.elem_type{
+                                    ElemType::ANNOUNCE => {continue}
+                                    ElemType::WITHDRAW => {
+                                        dbg!("withdrawal appeared");
+                                    }
+                                }
+                            }
+                            _ => {
+                                panic!("the update types can only be announce or withdrawal")
+                            }
+                        }
+                    }
+
                     if opts.json{
                         if opts.pretty {
                             println!("{}", serde_json::to_string_pretty(&e).unwrap());
