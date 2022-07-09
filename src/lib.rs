@@ -50,7 +50,7 @@ fn main() {
     }
 }
 ```
-*/
+ */
 
 use std::net::IpAddr;
 use bgp_models::prelude::*;
@@ -71,19 +71,20 @@ macro_rules! unwrap_or_return {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn compose_subscription_message(
-    host: Option<String>,
-    msg_type: Option<String>,
-    require: Option<String>,
-    peer: Option<String>,
-    prefix: Option<String>,
-    path: Option<String>,
-    more_specific: bool,
-    less_specific: bool,
+    host: &str,
+    msg_type: &Option<String>,
+    require: &Option<String>,
+    peer: &Option<String>,
+    prefix: &Option<String>,
+    path: &Option<String>,
+    more_specific: &bool,
+    less_specific: &bool,
 ) -> String {
     let mut options: Vec<String> = vec![];
 
-    if let Some(host) = host {
+    if host.to_lowercase().as_str() != "all" {
         options.push(format!("\"host\": \"{}\"", host))
     }
 
@@ -109,19 +110,19 @@ pub fn compose_subscription_message(
 
     match more_specific {
         true => {
-            options.push(format!("\"moreSpecific\": true"))
+            options.push("\"moreSpecific\": true".to_string())
         }
         false => {
-            options.push(format!("\"moreSpecific\": false"))
+            options.push("\"moreSpecific\": false".to_string())
         }
     }
 
     match less_specific {
         true => {
-            options.push(format!("\"lessSpecific\": true"))
+            options.push("\"lessSpecific\": true".to_string())
         }
         false => {
-            options.push(format!("\"lessSpecific\": false"))
+            options.push("\"lessSpecific\": false".to_string())
         }
     }
 
@@ -161,21 +162,18 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                     let mut elems: Vec<BgpElem> = vec![];
 
                     let peer_ip = unwrap_or_return!(ris_msg.peer.parse::<IpAddr>(), msg_string);
-                    let peer_asn = unwrap_or_return!(ris_msg.peer_asn.parse::<u32>(), msg_string);
+                    let peer_asn = Asn::from(unwrap_or_return!(ris_msg.peer_asn.parse::<u32>(), msg_string));
 
                     // parse path
-                    let as_path = match path{
-                        Some(p) => Some(path_to_as_path(p)),
-                        None => None
-                    };
+                    let as_path = path.map(path_to_as_path);
 
                     // parse community
-                    let communities = match community {
+                    let communities: Option<Vec<MetaCommunity>> = match community {
                         None => {None}
                         Some(cs) => {
-                            let mut comms: Vec<Community> = vec![];
+                            let mut comms: Vec<MetaCommunity> = vec![];
                             for c in cs {
-                                comms.push(Community::Custom(c.0,c.1));
+                                comms.push(MetaCommunity::Community(Community::Custom(Asn::from(c.0),c.1)));
                             }
                             Some(comms)
                         }
@@ -196,21 +194,15 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                         }
                     };
 
-                    // parse med
-                    let bgp_med = match med{
-                        None => {None}
-                        Some(med) => {Some(med)}
-                    };
-
                     // parse aggregator
                     let bgp_aggregator = match aggregator{
                         None => {(None, None)}
                         Some(aggr_str) => {
-                            let parts = aggr_str.split(":").collect::<Vec<&str>>();
+                            let parts = aggr_str.split(':').collect::<Vec<&str>>();
                             if parts.len()!=2 {
                                 return Err(ParserRisliveError::ElemIncorrectAggregator(aggr_str))
                             }
-                            let asn = unwrap_or_return!(parts[0].to_owned().parse::<u32>(), msg_string);
+                            let asn = Asn::from(unwrap_or_return!(parts[0].to_owned().parse::<u32>(), msg_string));
                             let ip = unwrap_or_return!(parts[1].to_owned().parse::<IpAddr>(), msg_string);
                             (Some(asn), Some(ip))
                         }
@@ -235,25 +227,60 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                                         return Err(ParserRisliveError::ElemIncorrectPrefix(prefix.to_string()))
                                     }
                                 };
+
                                 elems.push(
                                     BgpElem{
-                                        timestamp: ris_msg.timestamp.clone(),
+                                        timestamp: ris_msg.timestamp,
                                         elem_type: ElemType::ANNOUNCE,
-                                        peer_ip: peer_ip.clone(),
-                                        peer_asn: peer_asn.clone(),
+                                        peer_ip,
+                                        peer_asn,
                                         prefix: p,
-                                        next_hop: Some(nexthop.clone()),
+                                        next_hop: Some(nexthop),
                                         as_path: as_path.clone(),
                                         origin_asns: None,
-                                        origin: bgp_origin.clone(),
+                                        origin: bgp_origin,
                                         local_pref: None,
-                                        med: bgp_med.clone(),
+                                        med,
                                         communities: communities.clone(),
                                         atomic: None,
-                                        aggr_asn: bgp_aggregator.0.clone(),
-                                        aggr_ip: bgp_aggregator.1.clone(),
+                                        aggr_asn: bgp_aggregator.0,
+                                        aggr_ip: bgp_aggregator.1,
                                     }
                                 );
+                            }
+
+                            if let Some(prefixes) = &announcement.withdrawals {
+                                for prefix in prefixes {
+                                    let p = match prefix.parse::<NetworkPrefix>(){
+                                        Ok(net) => { net }
+                                        Err(_) => {
+                                            if prefix == "eor" {
+                                                return Err(ParserRisliveError::ElemEndOfRibPrefix)
+                                            }
+                                            return Err(ParserRisliveError::ElemIncorrectPrefix(prefix.to_string()))
+                                        }
+                                    };
+                                    elems.push(
+                                        BgpElem{
+                                            timestamp: ris_msg.timestamp,
+                                            elem_type: ElemType::WITHDRAW,
+                                            peer_ip,
+                                            peer_asn,
+                                            prefix: p,
+                                            next_hop: None,
+                                            as_path: None,
+                                            origin_asns: None,
+                                            origin: None,
+                                            local_pref: None,
+                                            med: None,
+                                            communities: None,
+                                            atomic: None,
+                                            aggr_asn: None,
+                                            aggr_ip: None,
+                                        }
+                                    );
+
+                                }
                             }
                         }
                     }
@@ -274,7 +301,7 @@ mod tests {
     #[test]
     fn test_ris_live_msg() {
         let msg_str = r#"
-        {"type": "ris_message","data":{"timestamp":1636247118.76,"peer":"2001:7f8:24::82","peer_asn":"58299","id":"20-5761-238131559","host":"rrc20","type":"UPDATE","path":[58299,49981,397666],"origin":"igp","announcements":[{"next_hop":"2001:7f8:24::82","prefixes":["2602:fd9e:f00::/40"]},{"next_hop":"fe80::768e:f8ff:fea6:b2c4","prefixes":["2602:fd9e:f00::/40"]}],"raw":"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF005A02000000434001010040020E02030000E3BB0000C33D00061162800E2B00020120200107F8002400000000000000000082FE80000000000000768EF8FFFEA6B2C400282602FD9E0F"}}
+        {"type": "ris_message","data":{"timestamp":1636247118.76,"peer":"2001:7f8:24::82","peer_asn":"58299","id":"20-5761-238131559","host":"rrc20","type":"UPDATE","path":[58299,49981,397666],"origin":"igp","announcements":[{"next_hop":"2001:7f8:24::82","prefixes":["2602:fd9e:f00::/40"]},{"next_hop":"fe80::768e:f8ff:fea6:b2c4","prefixes":["2602:fd9e:f00::/40"], "withdrawals": ["1.1.1.0/24", "8.8.8.0/24"]}],"raw":"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF005A02000000434001010040020E02030000E3BB0000C33D00061162800E2B00020120200107F8002400000000000000000082FE80000000000000768EF8FFFEA6B2C400282602FD9E0F"}}
         "#;
         let msg = parse_ris_live_message(&msg_str).unwrap();
         for elem in msg {
