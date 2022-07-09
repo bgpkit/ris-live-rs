@@ -64,28 +64,28 @@ function to create a filtering message.
 
 ```rust
 pub fn compose_subscription_message(
-    host: Option<String>,
-    msg_type: Option<String>,
-    require: Option<String>,
-    peer: Option<String>,
-    prefix: Option<String>,
-    path: Option<String>,
-    more_specific: bool,
-    less_specific: bool,
+    host: &String,
+    msg_type: &Option<String>,
+    require: &Option<String>,
+    peer: &Option<String>,
+    prefix: &Option<String>,
+    path: &Option<String>,
+    more_specific: &bool,
+    less_specific: &bool,
 ) -> String {
     ...
 }
 
 // subscribe to messages from one collector
 let msg = compose_subscription_message(
-opts.host,
-opts.msg_type,
-opts.require,
-opts.peer,
-opts.prefix,
-opts.path,
-opts.more_specific,
-opts.less_specific
+    &opts.host,
+    &opts.msg_type,
+    &opts.require,
+    &opts.peer,
+    &opts.prefix,
+    &opts.path,
+    &opts.more_specific,
+    &opts.less_specific
 );
 println!("{}", &msg);
 socket.write_message(Message::Text(msg)).unwrap();
@@ -100,31 +100,32 @@ that supports filtering and different output formats: `ris-live-reader`.
 
 Full command-line options are:
 ```
-ris-live-rs 0.1.0
-
-Mingwei Zhang <mingwei@bgpkit.com>
-
-ris-live-reader is a simple cli tool that can stream BGP data from RIS-Live project with websocket
+ris-live-reader 0.2.0
+ris-live-reader is a simple cli tool that can stream BGP data from RIS-Live project with websocket. Check out
+https://ris-live.ripe.net/ for more data source information
 
 USAGE:
-    ris-live-reader [OPTIONS]
+    ris-live-reader [FLAGS] [OPTIONS]
+
+FLAGS:
+    -h, --help             Prints help information
+        --json             Output as JSON objects
+        --less-specific    Match prefixes that are less specific (contain) `prefix`
+        --more-specific    Match prefixes that are more specific (part of) `prefix`
+        --pretty           Pretty-print JSON output
+        --raw              Print out raw message without parsing
+    -V, --version          Prints version information
 
 OPTIONS:
-        --client <CLIENT>        client name to identify the stream [default: ris-live-rs]
-    -h, --help                   Print help information
-        --host <HOST>            Filter by RRC host: e.g. rrc01
-        --json                   Output as JSON objects
-        --less-specific          Match prefixes that are less specific (contain) `prefix`
-        --more-specific          Match prefixes that are more specific (part of) `prefix`
-        --msg-type <MSG_TYPE>    Only include messages of a given BGP or RIS type: UPDATE, OPEN,
-                                 NOTIFICATION, KEEPALIVE, or RIS_PEER_STATE
-        --path <PATH>            ASN or pattern to match against the AS PATH attribute
-        --peer <PEER>            Only include messages sent by the given BGP peer
-        --prefix <PREFIX>        Filter UPDATE messages by prefixes in announcements or withdrawals
-        --pretty                 Pretty-print JSON output
-        --raw                    Print out raw message without parsing
-        --require <REQUIRE>      Only include messages containing a given key
-    -V, --version                Print version information
+        --client <client>              client name to identify the stream [default: ris-live-rs]
+        --host <host>                  Filter by RRC host: e.g. rrc01. Use "all" for the firehose [default: rrc21]
+        --msg-type <msg-type>          Only include messages of a given BGP or RIS type: UPDATE, OPEN, NOTIFICATION,
+                                       KEEPALIVE, or RIS_PEER_STATE
+        --path <path>                  ASN or pattern to match against the AS PATH attribute
+        --peer <peer>                  Only include messages sent by the given BGP peer
+        --prefix <prefix>              Filter UPDATE messages by prefixes in announcements or withdrawals
+        --require <require>            Only include messages containing a given key
+        --update-type <update-type>    Only a given BGP update type: announcement (a) or withdrawal (w)
 ```
 
 ### Installation
@@ -153,7 +154,7 @@ docker run --rm -it bgpkit/ris-live-reader --help
 
 ## Built with ❤️ by BGPKIT Team
 
-BGPKIT is a small-team start-up that focuses on building the best tooling for BGP data in Rust. We have 10 years of
+BGPKIT is a small-team focuses on building the best open-source tooling for BGP data in Rust. We have more than 10 years of
 experience working with BGP data and believe that our work can enable more companies to start keeping tracks of BGP data
 on their own turf. Learn more about what services we provide at https://bgpkit.com.
 
