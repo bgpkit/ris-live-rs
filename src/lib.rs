@@ -71,6 +71,7 @@ macro_rules! unwrap_or_return {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn compose_subscription_message(
     host: Option<String>,
     msg_type: Option<String>,
@@ -109,19 +110,19 @@ pub fn compose_subscription_message(
 
     match more_specific {
         true => {
-            options.push(format!("\"moreSpecific\": true"))
+            options.push("\"moreSpecific\": true".to_string())
         }
         false => {
-            options.push(format!("\"moreSpecific\": false"))
+            options.push("\"moreSpecific\": false".to_string())
         }
     }
 
     match less_specific {
         true => {
-            options.push(format!("\"lessSpecific\": true"))
+            options.push("\"lessSpecific\": true".to_string())
         }
         false => {
-            options.push(format!("\"lessSpecific\": false"))
+            options.push("\"lessSpecific\": false".to_string())
         }
     }
 
@@ -164,10 +165,7 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                     let peer_asn = Asn::from(unwrap_or_return!(ris_msg.peer_asn.parse::<u32>(), msg_string));
 
                     // parse path
-                    let as_path = match path{
-                        Some(p) => Some(path_to_as_path(p)),
-                        None => None
-                    };
+                    let as_path = path.map(path_to_as_path);
 
                     // parse community
                     let communities: Option<Vec<MetaCommunity>> = match community {
@@ -196,17 +194,11 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                         }
                     };
 
-                    // parse med
-                    let bgp_med = match med{
-                        None => {None}
-                        Some(med) => {Some(med)}
-                    };
-
                     // parse aggregator
                     let bgp_aggregator = match aggregator{
                         None => {(None, None)}
                         Some(aggr_str) => {
-                            let parts = aggr_str.split(":").collect::<Vec<&str>>();
+                            let parts = aggr_str.split(':').collect::<Vec<&str>>();
                             if parts.len()!=2 {
                                 return Err(ParserRisliveError::ElemIncorrectAggregator(aggr_str))
                             }
@@ -238,21 +230,21 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
 
                                 elems.push(
                                     BgpElem{
-                                        timestamp: ris_msg.timestamp.clone(),
+                                        timestamp: ris_msg.timestamp,
                                         elem_type: ElemType::ANNOUNCE,
-                                        peer_ip: peer_ip.clone(),
-                                        peer_asn: peer_asn.clone(),
+                                        peer_ip,
+                                        peer_asn,
                                         prefix: p,
-                                        next_hop: Some(nexthop.clone()),
+                                        next_hop: Some(nexthop),
                                         as_path: as_path.clone(),
                                         origin_asns: None,
-                                        origin: bgp_origin.clone(),
+                                        origin: bgp_origin,
                                         local_pref: None,
-                                        med: bgp_med.clone(),
+                                        med,
                                         communities: communities.clone(),
                                         atomic: None,
-                                        aggr_asn: bgp_aggregator.0.clone(),
-                                        aggr_ip: bgp_aggregator.1.clone(),
+                                        aggr_asn: bgp_aggregator.0,
+                                        aggr_ip: bgp_aggregator.1,
                                     }
                                 );
                             }
