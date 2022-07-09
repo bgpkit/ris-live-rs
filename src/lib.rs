@@ -161,7 +161,7 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                     let mut elems: Vec<BgpElem> = vec![];
 
                     let peer_ip = unwrap_or_return!(ris_msg.peer.parse::<IpAddr>(), msg_string);
-                    let peer_asn = unwrap_or_return!(ris_msg.peer_asn.parse::<u32>(), msg_string);
+                    let peer_asn = Asn::from(unwrap_or_return!(ris_msg.peer_asn.parse::<u32>(), msg_string));
 
                     // parse path
                     let as_path = match path{
@@ -170,12 +170,12 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                     };
 
                     // parse community
-                    let communities = match community {
+                    let communities: Option<Vec<MetaCommunity>> = match community {
                         None => {None}
                         Some(cs) => {
-                            let mut comms: Vec<Community> = vec![];
+                            let mut comms: Vec<MetaCommunity> = vec![];
                             for c in cs {
-                                comms.push(Community::Custom(c.0,c.1));
+                                comms.push(MetaCommunity::Community(Community::Custom(Asn::from(c.0),c.1)));
                             }
                             Some(comms)
                         }
@@ -210,7 +210,7 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                             if parts.len()!=2 {
                                 return Err(ParserRisliveError::ElemIncorrectAggregator(aggr_str))
                             }
-                            let asn = unwrap_or_return!(parts[0].to_owned().parse::<u32>(), msg_string);
+                            let asn = Asn::from(unwrap_or_return!(parts[0].to_owned().parse::<u32>(), msg_string));
                             let ip = unwrap_or_return!(parts[1].to_owned().parse::<IpAddr>(), msg_string);
                             (Some(asn), Some(ip))
                         }
@@ -235,6 +235,7 @@ pub fn parse_ris_live_message(msg_str: &str) -> Result<Vec<BgpElem>, ParserRisli
                                         return Err(ParserRisliveError::ElemIncorrectPrefix(prefix.to_string()))
                                     }
                                 };
+
                                 elems.push(
                                     BgpElem{
                                         timestamp: ris_msg.timestamp.clone(),
