@@ -73,7 +73,7 @@ macro_rules! unwrap_or_return {
 
 #[allow(clippy::too_many_arguments)]
 pub fn compose_subscription_message(
-    host: &String,
+    host: &str,
     msg_type: &Option<String>,
     require: &Option<String>,
     peer: &Option<String>,
