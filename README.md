@@ -1,11 +1,8 @@
 # ris-live-rs
 
-[![Rust](https://github.com/bgpkit/ris-live-rs/actions/workflows/rust.yml/badge.svg)](https://github.com/bgpkit/ris-live-rs/actions/workflows/rust.yml)
-
-The main parsing function, `parse_ris_live_message` converts a JSON-formatted message string into a
-vector of `BgpElem`s. The function is now part of the `bgpkit-parser` library.
-
-## `ris-live-reader`
+`ris-live-reader` is a CLI tool that builds up top of [`bgpkit-parser`](https://github.com/bgpkit/bgpkit-parser)
+library's RIS live message parsing functionalities to provide a commandline interface to stream BGP data from the
+[RIS-Live project](https://ris-live.ripe.net/).
 
 [![asciicast](https://asciinema.org/a/zAxCUmUko9H7T8KM9qFY77uPo.svg)](https://asciinema.org/a/zAxCUmUko9H7T8KM9qFY77uPo)
 
