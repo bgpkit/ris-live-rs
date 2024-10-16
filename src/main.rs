@@ -1,15 +1,15 @@
 extern crate core;
 
-use std::net::IpAddr;
-use std::str::FromStr;
 use bgpkit_parser::models::ElemType;
 use bgpkit_parser::parse_ris_live_message;
 use bgpkit_parser::rislive::error::ParserRisliveError;
 use bgpkit_parser::rislive::messages::ris_subscribe::RisSubscribeType;
 use bgpkit_parser::rislive::messages::{RisLiveClientMessage, RisSubscribe};
 use ipnet::IpNet;
-use tungstenite::{connect, Message};
+use std::net::IpAddr;
+use std::str::FromStr;
 use structopt::StructOpt;
+use tungstenite::{connect, Message};
 
 const RIS_LIVE_URL_BASE: &str = "ws://ris-live.ripe.net/v1/ws/";
 
@@ -80,31 +80,18 @@ fn main() {
     let url = format!("{}?client={}", RIS_LIVE_URL_BASE, opts.client);
     // connect to RIPE RIS Live websocket server
     let (mut socket, _response) =
-        connect(url.as_str())
-            .expect("Can't connect to RIS Live websocket server");
+        connect(url.as_str()).expect("Can't connect to RIS Live websocket server");
 
     let mut subscribe_msg = RisSubscribe::new();
     subscribe_msg.host = Some(opts.host.clone());
     if let Some(msg_type) = &opts.msg_type {
         subscribe_msg.data_type = match msg_type.as_str() {
-            "UPDATE" => {
-                Some(RisSubscribeType::UPDATE)
-            }
-            "OPEN" => {
-                Some(RisSubscribeType::OPEN)
-            }
-            "NOTIFICATION" => {
-                Some(RisSubscribeType::NOTIFICATION)
-            }
-            "KEEPALIVE" => {
-                Some(RisSubscribeType::KEEPALIVE)
-            }
-            "RIS_PEER_STATE" => {
-                Some(RisSubscribeType::RIS_PEER_STATE)
-            }
-            _ => {
-                None
-            }
+            "UPDATE" => Some(RisSubscribeType::UPDATE),
+            "OPEN" => Some(RisSubscribeType::OPEN),
+            "NOTIFICATION" => Some(RisSubscribeType::NOTIFICATION),
+            "KEEPALIVE" => Some(RisSubscribeType::KEEPALIVE),
+            "RIS_PEER_STATE" => Some(RisSubscribeType::RIS_PEER_STATE),
+            _ => None,
         };
     }
 
@@ -126,7 +113,9 @@ fn main() {
     if opts.less_specific {
         subscribe_msg.less_specific = Some(true);
     }
-    socket.send(Message::Text(subscribe_msg.to_json_string())).unwrap();
+    socket
+        .send(Message::Text(subscribe_msg.to_json_string()))
+        .unwrap();
 
     loop {
         let msg = socket.read().expect("Error reading message").to_string();
@@ -142,20 +131,16 @@ fn main() {
                 for e in elems {
                     if let Some(t) = &opts.update_type {
                         match t.to_lowercase().chars().next().unwrap() {
-                            'a' => {
-                                match e.elem_type {
-                                    ElemType::ANNOUNCE => {}
-                                    ElemType::WITHDRAW => { continue }
+                            'a' => match e.elem_type {
+                                ElemType::ANNOUNCE => {}
+                                ElemType::WITHDRAW => continue,
+                            },
+                            'w' => match e.elem_type {
+                                ElemType::ANNOUNCE => continue,
+                                ElemType::WITHDRAW => {
+                                    dbg!("withdrawal appeared");
                                 }
-                            }
-                            'w' => {
-                                match e.elem_type {
-                                    ElemType::ANNOUNCE => { continue }
-                                    ElemType::WITHDRAW => {
-                                        dbg!("withdrawal appeared");
-                                    }
-                                }
-                            }
+                            },
                             _ => {
                                 panic!("the update types can only be announce or withdrawal")
                             }
