@@ -83,7 +83,11 @@ fn main() {
         connect(url.as_str()).expect("Can't connect to RIS Live websocket server");
 
     let mut subscribe_msg = RisSubscribe::new();
-    subscribe_msg.host = Some(opts.host.clone());
+    if opts.host == "all" {
+        subscribe_msg.host = None;
+    } else {
+        subscribe_msg.host = Some(opts.host.clone());
+    }
     if let Some(msg_type) = &opts.msg_type {
         subscribe_msg.data_type = match msg_type.as_str() {
             "UPDATE" => Some(RisSubscribeType::UPDATE),
