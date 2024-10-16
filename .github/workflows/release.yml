@@ -54,8 +54,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          bin: bgpkit-parser
+          bin: ris-live-reader
           checksum: sha256
-          features: cli
           target: ${{ matrix.target }}
           token: ${{ secrets.GITHUB_TOKEN }}
