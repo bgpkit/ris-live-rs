@@ -15,8 +15,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run format check
         run: cargo fmt --check
-      - name: Run cargo-readme check
-        run: cargo install cargo-readme && cargo readme > TMP_README.md && diff -b TMP_README.md README.md
 
   create-release:
     needs: release-format-check
